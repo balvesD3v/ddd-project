@@ -1,0 +1,23 @@
+{
+  "name": "clean-ddd",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@types/node": "^20.11.26",
+    "dayjs": "^1.11.10",
+    "typescript": "^5.4.2"
+  },
+  "devDependencies": {
+    "@rocketseat/eslint-config": "^2.2.2",
+    "vite-tsconfig-paths": "^4.3.1",
+    "vitest": "^1.3.1"
+  }
+}
