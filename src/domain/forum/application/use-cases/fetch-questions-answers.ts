@@ -1,3 +1,4 @@
+import { Either, right } from '@/core/either'
 import { Answer } from '../../enterprise/entities/answer'
 import { AnswersRepository } from '../repositories/answers-repository'
 
@@ -6,9 +7,12 @@ interface FecthQuestionsAnswersUseCaseRequest {
   page: number
 }
 
-interface FecthQuestionsAnswersUseCaseResponse {
-  answers: Answer[]
-}
+type FecthQuestionsAnswersUseCaseResponse = Either<
+  null,
+  {
+    answers: Answer[]
+  }
+>
 
 export class FecthQuestionsAnswersUseCase {
   constructor(private readonly answersRepository: AnswersRepository) {}
@@ -22,8 +26,8 @@ export class FecthQuestionsAnswersUseCase {
       { page },
     )
 
-    return {
+    return right({
       answers,
-    }
+    })
   }
 }
