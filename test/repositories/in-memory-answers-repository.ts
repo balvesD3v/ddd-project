@@ -1,12 +1,20 @@
 import { PaginationParams } from '@/core/repositories/pagination-params'
 import { AnswersRepository } from '@/domain/forum/application/repositories/answers-repository'
 import { Answer } from '@/domain/forum/enterprise/entities/answer'
+import { AnswerAttachmentRepository } from '@/domain/forum/application/repositories/answer-attachment-repository'
+import { DomainEvents } from '@/core/events/domain-events'
 
 export class InMemoryAnswersRepository implements AnswersRepository {
   public items: Answer[] = []
 
+  constructor(
+    private readonly answersAttachmentRepository: AnswerAttachmentRepository,
+  ) {}
+
   async create(answer: Answer) {
     this.items.push(answer)
+
+    DomainEvents.dispatchEventsForAggregate(answer.id)
   }
 
   async findById(id: string) {
@@ -22,11 +30,13 @@ export class InMemoryAnswersRepository implements AnswersRepository {
   async save(answer: Answer) {
     const itemIndex = this.items.findIndex((item) => item.id === answer.id)
     this.items[itemIndex] = answer
+    DomainEvents.dispatchEventsForAggregate(answer.id)
   }
 
   async delete(answer: Answer) {
     const itemIndex = this.items.findIndex((item) => item.id === answer.id)
     this.items.splice(itemIndex, 1)
+    this.answersAttachmentRepository.deleteManyByAnswerId(answer.id.toString())
   }
 
   async findManyByQuestionId(questionId: string, { page }: PaginationParams) {

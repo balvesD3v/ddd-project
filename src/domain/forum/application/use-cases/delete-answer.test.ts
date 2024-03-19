@@ -2,14 +2,21 @@ import { InMemoryAnswersRepository } from 'test/repositories/in-memory-answers-r
 import { DeleteAnswerUseCase } from './delete-answer'
 import { makeAnswer } from 'test/factories/make-answer'
 import { UniqueEntityId } from '@/core/entities/unique-entity-id'
-import { NotAllowedError } from './errors/not-allowed-error'
+import { NotAllowedError } from '@/core/errors/errors/not-allowed-error'
+import { InMemoryAnswerAttachmentRepository } from 'test/repositories/in-memory-answers-attachments-repository'
+import { makeAnswerAttachment } from 'test/factories/make-answer-attachment'
 
 let inMemoryAnswerRepository: InMemoryAnswersRepository
+let inMemoryAnswerAttachmentRepository: InMemoryAnswerAttachmentRepository
 let sut: DeleteAnswerUseCase
 
 describe('Delete Answer', () => {
   beforeEach(() => {
-    inMemoryAnswerRepository = new InMemoryAnswersRepository()
+    inMemoryAnswerAttachmentRepository =
+      new InMemoryAnswerAttachmentRepository()
+    inMemoryAnswerRepository = new InMemoryAnswersRepository(
+      inMemoryAnswerAttachmentRepository,
+    )
     sut = new DeleteAnswerUseCase(inMemoryAnswerRepository)
   })
 
@@ -23,15 +30,27 @@ describe('Delete Answer', () => {
 
     await inMemoryAnswerRepository.create(newAnswer)
 
+    inMemoryAnswerAttachmentRepository.items.push(
+      makeAnswerAttachment({
+        answerId: newAnswer.id,
+        attachmentId: new UniqueEntityId('1'),
+      }),
+      makeAnswerAttachment({
+        answerId: newAnswer.id,
+        attachmentId: new UniqueEntityId('2'),
+      }),
+    )
+
     await sut.execute({
       answerId: 'answer-1',
       authorId: 'author-1',
     })
 
     expect(inMemoryAnswerRepository.items).toHaveLength(0)
+    expect(inMemoryAnswerAttachmentRepository.items).toHaveLength(0)
   })
 
-  it('Should be able to delete a answer from another user', async () => {
+  it('Should not be able to delete a answer from another user', async () => {
     const newAnswer = makeAnswer(
       {
         authorId: new UniqueEntityId('author-1'),
